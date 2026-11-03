@@ -1,0 +1,34 @@
+{
+  "description": "SCA-7317: JS reachability enrichment must succeed when package.json devEngines.runtime does not match the scanner's Node version (onFail=error). Before the fix every `npm view` exited 1 with EBADDEVENGINES and enrichment aborted.",
+  "version": 1.14,
+  "base_config": {
+    "validate_scan_output": true,
+    "validate_dependency_tree": true,
+    "dependency_tree": {
+      "check_update_request_sca_results": true,
+      "expected_package_managers": {"contains": ["npm"]}
+    },
+    "validate_scanner_logs": true,
+    "logs": {
+      "check_scanner_logs": true,
+      "expected_log_lines": [
+        {"operator": "regex", "value": "EBADDEVENGINES"},
+        {"operator": "ne", "value": "Enrichment aborted after"},
+        {"operator": "ne", "value": "npm view failed for"}
+      ],
+      "_comment_expected_log_lines": "EBADDEVENGINES must appear (the Unified Agent's own `npm config get package-lock` still hits it, out of scope for SCA-7317), proving the devEngines mismatch is live in the same scan. Reachability enrichment must not fail or abort."
+    },
+    "validate_reachability": true,
+    "reachability": {
+      "check_reachability_status": true,
+      "expected_reachable_libraries": {
+        "contains": [
+          {"library_name": "ejs-2.7.4.tgz", "vulnerabilities": ["CVE-2022-29078"]},
+          {"library_name": "lodash-4.17.19.tgz", "vulnerabilities": ["CVE-2021-23337"]},
+          {"library_name": "jsonwebtoken-8.5.1.tgz", "vulnerabilities": ["CVE-2022-23539"]}
+        ]
+      },
+      "expected_total_reachable_count": {"gte": 8}
+    }
+  }
+}
